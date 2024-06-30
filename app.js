@@ -18,7 +18,7 @@ const cookieParser = require("cookie-parser");
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
 
-
+// Start Express App
 // Requiring Route Handlers
 const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
