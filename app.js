@@ -15,6 +15,7 @@ const cookieParser = require("cookie-parser");
 const compression = require('compression');
 
 // const { CrossOriginResourcePolicy } = require('cross-origin-resource-policy');
+app.enable('trust proxy');
 
 // Set Templating Engine
 app.set("view engine", "pug");
