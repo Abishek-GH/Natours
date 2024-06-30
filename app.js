@@ -13,6 +13,10 @@ const path = require("path");
 const viewRouter = require("./routes/viewRoutes");
 const cookieParser = require("cookie-parser");
 const compression = require('compression');
+const cors = require("cors");
+
+
+
 
 // const { CrossOriginResourcePolicy } = require('cross-origin-resource-policy');
 app.enable('trust proxy');
@@ -20,6 +24,9 @@ app.enable('trust proxy');
 // Set Templating Engine
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
+
+app.use(cors());
+app.options('*', cors());
 
 // Start Express App
 // Requiring Route Handlers
