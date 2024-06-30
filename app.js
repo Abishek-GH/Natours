@@ -12,6 +12,8 @@ const hpp = require("hpp");
 const path = require("path");
 const viewRouter = require("./routes/viewRoutes");
 const cookieParser = require("cookie-parser");
+const compression = require('compression');
+
 // const { CrossOriginResourcePolicy } = require('cross-origin-resource-policy');
 
 // Set Templating Engine
@@ -107,6 +109,8 @@ app.use(hpp({
 // Middleware for serving static files 
 // This sends the static files in to the webpage
 // Here the public folder will be the root folder and the required files can be accessed using the directory in respect to the public(root folder)
+
+app.use(compression());
 
 app.use((req, res, next) => {
     req.requestTime = new Date().toISOString();
