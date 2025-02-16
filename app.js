@@ -1,38 +1,35 @@
 // Importing the necessary modules
-const express = require("express");
-const morgan = require("morgan");
+const express = require('express');
+const morgan = require('morgan');
 const app = express();
-const AppError = require("./utils/appError");
-const globalErrorHandler = require("./controllers/errorController");
-const rateLimit = require("express-rate-limit");
-const helmet = require("helmet");
-const mongoSanitize = require("express-mongo-sanitize");
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/errorController');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
-const hpp = require("hpp");
-const path = require("path");
-const viewRouter = require("./routes/viewRoutes");
-const cookieParser = require("cookie-parser");
+const hpp = require('hpp');
+const path = require('path');
+const viewRouter = require('./routes/viewRoutes');
+const cookieParser = require('cookie-parser');
 const compression = require('compression');
-const cors = require("cors");
-
-
-
+const cors = require('cors');
 
 // const { CrossOriginResourcePolicy } = require('cross-origin-resource-policy');
 app.enable('trust proxy');
 
 // Set Templating Engine
-app.set("view engine", "pug");
-app.set("views", path.join(__dirname, "views"));
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 
 app.use(cors());
 app.options('*', cors());
 
 // Start Express App
 // Requiring Route Handlers
-const tourRouter = require("./routes/tourRoutes");
-const userRouter = require("./routes/userRoutes");
-const reviewRouter = require("./routes/reviewRoutes");
+const tourRouter = require('./routes/tourRoutes');
+const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewRoutes');
 
 // Getting the enivornment variables
 // console.log(app.get("env"));
@@ -79,19 +76,24 @@ app.use(helmet());
 // );
 
 // Development login
-if (process.env.NODE_ENV === "development") {
-    app.use(morgan("dev"));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+if (process.env.NODE_ENV === 'production') {
+  console.log('You are in PRODUCTION!');
 }
 
 // Setting rate limit
 const limiter = rateLimit({
-    max: 100,
-    windowMS: 60 * 60 * 1000,
-    message: "Too Many requests from this IP, please try again in a hour"
+  max: 100,
+  windowMS: 60 * 60 * 1000,
+  message: 'Too Many requests from this IP, please try again in a hour',
+  validate: { trustProxy: false }, // Avoid permissive trust warnings
 });
 app.use('/api', limiter);
 
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
@@ -102,46 +104,45 @@ app.use(mongoSanitize());
 app.use(xss());
 
 // Prevent Parameter Pollution
-app.use(hpp({
+app.use(
+  hpp({
     whitelist: [
-        "duration",
-        "ratingsQuantity",
-        "ratingsAverage",
-        "maxGroupSize",
-        "difficulty",
-        "price"
-    ]
-}));
+      'duration',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  })
+);
 
-// Middleware for serving static files 
+// Middleware for serving static files
 // This sends the static files in to the webpage
 // Here the public folder will be the root folder and the required files can be accessed using the directory in respect to the public(root folder)
 
 app.use(compression());
 
 app.use((req, res, next) => {
-    req.requestTime = new Date().toISOString();
-    // console.log(req.cookies);
-    next();
-})
+  req.requestTime = new Date().toISOString();
+  // console.log(req.cookies);
+  next();
+});
 
 // app.use(express.static(`${__dirname}/public`));
 app.use(express.static(path.join(__dirname, `public`)));
 
 // The below middle ware applies only for those routes.
-app.use("/", viewRouter);
-app.use("/api/v1/tours", tourRouter);
-app.use("/api/v1/users", userRouter);
-app.use("/api/v1/reviews", reviewRouter);
+app.use('/', viewRouter);
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 app.all('*', (req, res, next) => {
-    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
 app.use(globalErrorHandler);
 
 // Exporting this module
 module.exports = app;
-
-
-
