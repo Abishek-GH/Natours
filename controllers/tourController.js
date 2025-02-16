@@ -1,61 +1,60 @@
 // Importing the necessary modules
-const fs = require("fs");
-const Tour = require("./../models/tourModel");
-const APIFeatures = require("./../utils/apiFeatures");
+const fs = require('fs');
+const Tour = require('./../models/tourModel');
+const APIFeatures = require('./../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
-const AppError = require("./../utils/appError");
-const factory = require("./handlerFactory");
-const User = require("./../models/userModel");
-const sharp = require("sharp");
-const multer = require("multer");
+const AppError = require('./../utils/appError');
+const factory = require('./handlerFactory');
+const User = require('./../models/userModel');
+const sharp = require('sharp');
+const multer = require('multer');
 
 const multerStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith('image')) {
-        cb(null, true);
-    } else {
-        cb(new AppError('Not an image! Please upload only images.', 400), false);
-    }
-}
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
+  }
+};
 
 const upload = multer({
-    storage: multerStorage,
-    fileFilter: multerFilter
+  storage: multerStorage,
+  fileFilter: multerFilter,
 });
 
 exports.uploadTourImages = upload.fields([
-    { name: 'imageCover', maxCount: 1 },
-    { name: 'images', maxCount: 3 }
+  { name: 'imageCover', maxCount: 1 },
+  { name: 'images', maxCount: 3 },
 ]);
 
 exports.resizeTourImage = catchAsync(async (req, res, next) => {
-    if (!req.files.imageCover || !req.files.images) {
-        return next();
-    }
-    req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+  if (!req.files.imageCover || !req.files.images) {
+    return next();
+  }
+  req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
 
-    await sharp(req.files.imageCover[0].buffer)
+  await sharp(req.files.imageCover[0].buffer)
+    .resize(2000, 1333)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/tours/${req.body.imageCover}`);
+
+  req.body.images = [];
+  await Promise.all(
+    req.files.images.map(async (file, i) => {
+      const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
+      await sharp(file.buffer)
         .resize(2000, 1333)
         .toFormat('jpeg')
         .jpeg({ quality: 90 })
-        .toFile(`public/img/tours/${req.body.imageCover}`);
+        .toFile(`public/img/tours/${filename}`);
+      req.body.images.push(filename);
+    })
+  );
 
-
-    req.body.images = [];
-    await Promise.all(
-        req.files.images.map(async (file, i) => {
-            const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
-            await sharp(file.buffer)
-                .resize(2000, 1333)
-                .toFormat('jpeg')
-                .jpeg({ quality: 90 })
-                .toFile(`public/img/tours/${filename}`);
-            req.body.images.push(filename);
-        })
-    );
-
-    next();
+  next();
 });
 // upload.single('image');
 // upload.array('images', 5);
@@ -93,12 +92,11 @@ exports.resizeTourImage = catchAsync(async (req, res, next) => {
 
 // Alias API
 exports.aliasTopTours = catchAsync((req, res, next) => {
-    req.query.limit = '5';
-    req.query.sort = '-ratingsAverage,price';
-    req.query.fields = "name,price,ratingsAverage,summary,difficulty";
-    next();
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
 });
-
 
 // Get All Tours
 exports.getAllTours = factory.getAll(Tour);
@@ -177,8 +175,8 @@ exports.getAllTours = (req, res) => {
 };
 */
 
-// // Get an unique tour 
-exports.getTour = factory.getOne(Tour, { path: "reviews" });
+// // Get an unique tour
+exports.getTour = factory.getOne(Tour, { path: 'reviews' });
 
 // // Getting an unique tour
 // exports.getTour = catchAsync(async (req, res, next) => {
@@ -304,154 +302,152 @@ exports.deleteTour = (req, res) => {
 */
 
 exports.getTourStats = catchAsync(async (req, res, next) => {
+  const stats = await Tour.aggregate([
+    {
+      $match: { ratingsAverage: { $gte: 4.5 } },
+    },
+    {
+      $group: {
+        _id: { $toUpper: '$difficulty' },
+        numTour: { $sum: 1 },
+        numRatings: { $sum: '$ratingsQuantity' },
+        avgRating: { $avg: '$ratingsAverage' },
+        avgPrice: { $avg: '$price' },
+        minPrice: { $min: '$price' },
+        maxPrice: { $max: '$price' },
+      },
+    },
+    {
+      $sort: { avgPrice: 1 },
+    },
+  ]);
 
-    const stats = await Tour.aggregate([
-        {
-            $match: { ratingsAverage: { $gte: 4.5 } }
-        },
-        {
-            $group: {
-                _id: { $toUpper: "$difficulty" },
-                numTour: { $sum: 1 },
-                numRatings: { $sum: "$ratingsQuantity" },
-                avgRating: { $avg: "$ratingsAverage" },
-                avgPrice: { $avg: "$price" },
-                minPrice: { $min: "$price" },
-                maxPrice: { $max: "$price" }
-            }
-        },
-        {
-            $sort: { avgPrice: 1 }
-        }
-    ]);
-
-    res.status(200).json({
-        status: "Success",
-        data: {
-            stats
-        }
-    })
+  res.status(200).json({
+    status: 'Success',
+    data: {
+      stats,
+    },
+  });
 });
 
 // Aggregrate Functions for for doing basic mathematical operations
 exports.monthlyPlan = catchAsync(async (req, res, next) => {
+  const year = req.params.year * 1;
+  const plan = await Tour.aggregate([
+    {
+      // Unwind is used to unpack the elemensta packed in a single object.
+      $unwind: '$startDates',
+    },
 
-    const year = req.params.year * 1;
-    const plan = await Tour.aggregate([
-        {
-            // Unwind is used to unpack the elemensta packed in a single object.
-            $unwind: "$startDates"
+    // Here the result will show only if the document matches with the below condition.
+    {
+      $match: {
+        startDates: {
+          $gte: new Date(`${year}-01-01`),
+          $lte: new Date(`${year}-12-31`),
         },
+      },
+    },
+    // Here we are grouping the results based on the conditions applied
+    {
+      $group: {
+        _id: { $month: '$startDates' },
+        numTourStarts: { $sum: 1 },
+        tours: { $push: '$name' },
+      },
+    },
+    // This is to add additional fields to the results without actually adding it into the db
+    {
+      $addFields: { month: '$_id' },
+    },
+    // This is to enable or disable the value in the results
+    {
+      $project: {
+        _id: 0,
+      },
+    },
+    // It sort accoring either in ascending order using 1 or in descending order using -1
+    {
+      $sort: {
+        numTourStarts: 1,
+      },
+    },
+  ]);
 
-        // Here the result will show only if the document matches with the below condition.
-        {
-            $match: {
-                startDates: {
-                    $gte: new Date(`${year}-01-01`),
-                    $lte: new Date(`${year}-12-31`)
-                }
-            }
-        },
-        // Here we are grouping the results based on the conditions applied
-        {
-            $group: {
-                _id: { $month: "$startDates" },
-                numTourStarts: { $sum: 1 },
-                tours: { $push: "$name" }
-            }
-        },
-        // This is to add additional fields to the results without actually adding it into the db
-        {
-            $addFields: { month: "$_id" }
-        },
-        // This is to enable or disable the value in the results
-        {
-            $project: {
-                _id: 0
-            }
-        },
-        // It sort accoring either in ascending order using 1 or in descending order using -1
-        {
-            $sort: {
-                numTourStarts: 1
-            }
-        }
-    ]);
-
-    res.status(200).json({
-        status: "Success",
-        data: {
-            plan
-        }
-    })
+  res.status(200).json({
+    status: 'Success',
+    data: {
+      plan,
+    },
+  });
 });
-
 
 // tour-within/233/center/34.111745,-118.113491/unit/mi
 exports.getToursWithIn = catchAsync(async (req, res, next) => {
-    const { distance, latlng, unit } = req.params;
-    const [lat, lng] = latlng.split(",");
-    // Mongo DB accepts the data only in the unit radians 
-    // To convert it the distance into radians we have to divide the distance by the Earth's radius (In Miles or In Kilometers)
-    const radius = unit === "mi" ? distance / 3963.2 : distance / 6378.1;
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+  // Mongo DB accepts the data only in the unit radians
+  // To convert it the distance into radians we have to divide the distance by the Earth's radius (In Miles or In Kilometers)
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
 
-    if (!lng || !lat) {
-        next(
-            new AppError(
-                "Please provide latitude and longitude in the format lat,lng",
-                400
-            )
-        );
-    }
-    const tours = await Tour.find({ startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } } });
+  if (!lng || !lat) {
+    next(
+      new AppError(
+        'Please provide latitude and longitude in the format lat,lng',
+        400
+      )
+    );
+  }
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
 
-    res.status(200).json({
-        status: "Success",
-        results: tours.length,
-        data: {
-            data: tours
-        }
-    });
+  res.status(200).json({
+    status: 'Success',
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
 });
 
 exports.getDistances = catchAsync(async (req, res, next) => {
-    const { latlng, unit } = req.params;
-    const [lat, lng] = latlng.split(",");
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
 
-    const multiplier = unit === "mi" ? 0.000621371 : 0.001;
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
 
-    if (!lng || !lat) {
-        next(
-            new AppError(
-                "Please provide latitude and longitude in the format lat,lng",
-                400
-            )
-        );
-    }
+  if (!lng || !lat) {
+    next(
+      new AppError(
+        'Please provide latitude and longitude in the format lat,lng',
+        400
+      )
+    );
+  }
 
-    const distances = await Tour.aggregate([
-        {
-            $geoNear: {
-                near: {
-                    type: "Point",
-                    coordinates: [lng * 1, lat * 1]
-                },
-                distanceField: "distance",
-                distanceMultiplier: multiplier
-            }
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1],
         },
-        {
-            $project: {
-                distance: 1,
-                name: 1
-            }
-        }
-    ]);
-    res.status(200).json({
-        status: "Success",
-        data: {
-            data: distances
-        }
-    });
-
+        distanceField: 'distance',
+        distanceMultiplier: multiplier,
+      },
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+  res.status(200).json({
+    status: 'Success',
+    data: {
+      data: distances,
+    },
+  });
 });

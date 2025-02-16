@@ -1,45 +1,45 @@
-
 // import '@babel/polyfill';
-import { login, logout } from "./login";
+import { login, logout } from './login';
 import { displayMap } from './mapbox';
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
+import { bookTour } from './stripe';
 import { updateSettings } from './updateSettings';
-
 
 // console.log("Hello From Parcel");
 
 // Dom Elements
 const mapbox = document.getElementById('map');
-const loginForm = document.querySelector(".form--login");
-const logOutBtn = document.querySelector(".nav__el--logout");
-const userDataForm = document.querySelector(".form-user-data");
-const userPasswordForm = document.querySelector(".form-user-password");
-
+const loginForm = document.querySelector('.form--login');
+const logOutBtn = document.querySelector('.nav__el--logout');
+const userDataForm = document.querySelector('.form-user-data');
+const userPasswordForm = document.querySelector('.form-user-password');
+const bookBtn = document.getElementById('book-tour');
 
 // Delegations
 
 if (mapbox) {
-    const locations = JSON.parse(document.getElementById('map').dataset.locations);
-    displayMap(locations);
+  const locations = JSON.parse(
+    document.getElementById('map').dataset.locations
+  );
+  displayMap(locations);
 }
 
 if (loginForm) {
-    loginForm.addEventListener('submit', e => {
-        e.preventDefault();
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
 
-        // Values
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+    // Values
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-        login(email, password);
-    });
+    login(email, password);
+  });
 }
 
 if (logOutBtn) {
-    logOutBtn.addEventListener('click', logout);
+  logOutBtn.addEventListener('click', logout);
 }
-
 
 // import '@babel/polyfill';
 // import { login } from "./login";
@@ -48,10 +48,6 @@ if (logOutBtn) {
 // // DOM elements
 // const mapbox = document.getElementById('map');
 // const loginForm = document.querySelector('.form');
-
-
-
-
 
 // // Delegation
 
@@ -73,35 +69,43 @@ if (logOutBtn) {
 //     });
 // }
 
-
 if (userDataForm) {
-    userDataForm.addEventListener('submit', e => {
-        e.preventDefault();
-        const form = new FormData();
-        form.append('email', document.getElementById('email').value);
-        form.append('name', document.getElementById('name').value);
-        form.append('photo', document.getElementById('photo').files[0]);
-        console.log(form);
-        updateSettings(form, 'data');
-    });
+  userDataForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const form = new FormData();
+    form.append('email', document.getElementById('email').value);
+    form.append('name', document.getElementById('name').value);
+    form.append('photo', document.getElementById('photo').files[0]);
+    console.log(form);
+    updateSettings(form, 'data');
+  });
 }
 
 if (userPasswordForm) {
-    userPasswordForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+  userPasswordForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-        document.querySelector('.btn--save-password').textContent = 'Updating...';
+    document.querySelector('.btn--save-password').textContent = 'Updating...';
 
-        const passwordCurrent = document.getElementById('password-current').value;
-        const password = document.getElementById('password').value;
-        const passwordConfirm = document.getElementById('password-confirm').value;
-        console.log(passwordConfirm, password, passwordCurrent);
-        await updateSettings({ passwordCurrent, password, passwordConfirm }, 'password');
+    const passwordCurrent = document.getElementById('password-current').value;
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('password-confirm').value;
+    console.log(passwordConfirm, password, passwordCurrent);
+    await updateSettings(
+      { passwordCurrent, password, passwordConfirm },
+      'password'
+    );
 
-        document.querySelector('.btn--save-password').textContent = 'Save password';
-        document.getElementById('password-current').value = '';
-        document.getElementById('password').value = '';
-        document.getElementById('password-confirm').value = '';
-
-    });
+    document.querySelector('.btn--save-password').textContent = 'Save password';
+    document.getElementById('password-current').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('password-confirm').value = '';
+  });
 }
+
+if (bookBtn)
+  bookBtn.addEventListener('click', (e) => {
+    e.target.textContent = 'Processing...';
+    const { tourId } = e.target.dataset;
+    bookTour(tourId);
+  });
