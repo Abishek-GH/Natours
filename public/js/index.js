@@ -19,9 +19,7 @@ const bookBtn = document.getElementById('book-tour');
 // Delegations
 
 if (mapbox) {
-  const locations = JSON.parse(
-    document.getElementById('map').dataset.locations
-  );
+  const locations = JSON.parse(document.getElementById('map').dataset.locations);
   displayMap(locations);
 }
 
@@ -91,10 +89,7 @@ if (userPasswordForm) {
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
     console.log(passwordConfirm, password, passwordCurrent);
-    await updateSettings(
-      { passwordCurrent, password, passwordConfirm },
-      'password'
-    );
+    await updateSettings({ passwordCurrent, password, passwordConfirm }, 'password');
 
     document.querySelector('.btn--save-password').textContent = 'Save password';
     document.getElementById('password-current').value = '';
