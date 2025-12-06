@@ -9,7 +9,11 @@
     "start:prod": "set NODE_ENV=production&& nodemon server.js",
     "debug": "ndb server.js",
     "watch:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js --public-url /js",
-    "build:js": "parcel build ./public/js/index.js --out-dir ./public/js --out-file bundle.js --public-url /js"
+    "build:js": "parcel build ./public/js/index.js --out-dir ./public/js --out-file bundle.js --public-url /js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
   },
   "author": "",
   "license": "ISC",
