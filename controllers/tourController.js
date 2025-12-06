@@ -51,7 +51,7 @@ exports.resizeTourImage = catchAsync(async (req, res, next) => {
         .jpeg({ quality: 90 })
         .toFile(`public/img/tours/${filename}`);
       req.body.images.push(filename);
-    }),
+    })
   );
 
   next();
@@ -391,7 +391,12 @@ exports.getToursWithIn = catchAsync(async (req, res, next) => {
   const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
 
   if (!lng || !lat) {
-    next(new AppError('Please provide latitude and longitude in the format lat,lng', 400));
+    next(
+      new AppError(
+        'Please provide latitude and longitude in the format lat,lng',
+        400
+      )
+    );
   }
   const tours = await Tour.find({
     startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
@@ -413,7 +418,12 @@ exports.getDistances = catchAsync(async (req, res, next) => {
   const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
 
   if (!lng || !lat) {
-    next(new AppError('Please provide latitude and longitude in the format lat,lng', 400));
+    next(
+      new AppError(
+        'Please provide latitude and longitude in the format lat,lng',
+        400
+      )
+    );
   }
 
   const distances = await Tour.aggregate([

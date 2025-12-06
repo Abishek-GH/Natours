@@ -116,7 +116,7 @@ app.use(
       'difficulty',
       'price',
     ],
-  }),
+  })
 );
 
 // Middleware for serving static files
