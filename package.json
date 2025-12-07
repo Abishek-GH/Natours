@@ -1,6 +1,10 @@
 {
-  "name": "starter",
+  "name": "natours",
   "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "e2e"
+  ],
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -13,7 +17,9 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
-    "format:check": "prettier . --check"
+    "format:check": "prettier . --check",
+    "lint:e2e": "eslint './e2e/**/*.{ts,tsx,js}'",
+    "format:e2e": "prettier --write './e2e/**/*.{ts,tsx,js,json,md}'"
   },
   "author": "",
   "license": "ISC",
@@ -53,10 +59,12 @@
     "@babel/node": "^7.23.9",
     "@babel/preset-env": "^7.24.4",
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.57.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "parcel-bundler": "^1.12.5",
     "prettier": "^3.7.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.1"
   },

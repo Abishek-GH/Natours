@@ -1,0 +1,15 @@
+{
+  "cookies": [
+    {
+      "name": "jwt",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YjFkMzdhYjViM2FhMjczNDcyZDY5YiIsImlhdCI6MTc2NTEzNzA4OSwiZXhwIjoxNzcyOTEzMDg5fQ.bzm0ocXs2lSAzWvaU0ue56R6srXzU0y8iCshDC8eKeE",
+      "domain": "natours-abishek-9cbc3fa443ff.herokuapp.com",
+      "path": "/",
+      "expires": 1772913090.300886,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}
