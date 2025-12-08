@@ -34,6 +34,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run Playwright tests
+        working-directory: e2e
         run: npx playwright test login.spec.ts --project chromium
         env:
           CI: true
