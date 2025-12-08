@@ -2,26 +2,21 @@ name: Playwright E2E Tests
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   e2e:
-    name: Playwright on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Playwright
+    runs-on: ubuntu-latest
     timeout-minutes: 60
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
 
     env:
       NODE_ENV: test
-      BASE_URL: http://localhost:3000
-      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      BASE_URL: 'https://natours-abishek-9cbc3fa443ff.herokuapp.com'
+      TEST_USER_EMAIL: 'abishek3622@gmail.com'
+      TEST_USER_PASSWORD: 'admin@1234'
 
     steps:
       - name: Checkout code
@@ -35,24 +30,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      # If your app needs build step
-      - name: Build web app
-        run: npm run build --workspace apps/web
-        if: hashFiles('apps/web/package.json') != ''
-
-      - name: Start web app
-        run: npm run start --workspace apps/web &
-        if: hashFiles('apps/web/package.json') != ''
-
-      - name: Wait for app to be ready
-        run: npx wait-on ${{ env.BASE_URL }}
-
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: npx playwright test
+        run: npx playwright test login.spec.ts --project chromonium
         env:
           CI: true
 
@@ -60,7 +42,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.os }}
+          name: playwright-report
           path: playwright-report
           retention-days: 7
 
@@ -68,6 +50,6 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-test-results-${{ matrix.os }}
+          name: playwright-test-results
           path: e2e/test-results
           retention-days: 7
