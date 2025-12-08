@@ -22,7 +22,11 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
-    ['junit', { outputFile: 'e2e/test-results/junit-results.xml' }],
+    [
+      'monocart-reporter',
+      { name: 'My Test Report', outputFile: 'e2e/test-results/monocart-report.json' },
+    ],
+    ['allure-playwright', { outputFolder: 'e2e/test-results/allure-results' }],
   ],
 
   use: {
@@ -39,7 +43,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1920, height: 1080 } },
     },
     {
       name: 'firefox',
@@ -48,6 +52,20 @@ export default defineConfig({
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+    },
+    {
+      name: 'mobile-safari',
+      use: {
+        browserName: 'webkit', // iOS Safari uses WebKit
+        ...devices['iPhone 13'], // iPhone 13 emulation
+      },
+    },
+    {
+      name: 'mobile-chrome',
+      use: {
+        browserName: 'chromium', // Android Chrome uses Chromium
+        ...devices['Pixel 5'], // Pixel 5 emulation
+      },
     },
   ],
 
