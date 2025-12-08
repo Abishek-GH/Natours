@@ -22,11 +22,8 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
-    [
-      'monocart-reporter',
-      { name: 'My Test Report', outputFile: 'e2e/test-results/monocart-report.json' },
-    ],
-    ['allure-playwright', { outputFolder: 'e2e/test-results/allure-results' }],
+    ['monocart-reporter', { name: 'My Test Report', outputFile: 'test-results' }],
+    ['allure-playwright', { outputFolder: 'test-results' }],
   ],
 
   use: {
