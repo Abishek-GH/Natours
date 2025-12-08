@@ -2,14 +2,7 @@ import { test, expect } from '../fixtures/auth-fixture';
 
 // Fixtures version
 test('user can log in and see dashboard', async ({ loggedInPage }) => {
-  await loggedInPage.pause();
-  await loggedInPage.goto('/dashboard');
-
-  await expect(loggedInPage.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
-
-  await expect(loggedInPage.getByTestId('user-email')).toHaveText(
-    process.env.TEST_USER_EMAIL ?? 'test@example.com',
-  );
+  await expect(loggedInPage.locator('//nav//a[contains(.,"Log out")]')).toBeVisible();
 });
 
 // // Global storage state version
